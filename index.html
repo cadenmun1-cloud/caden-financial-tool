@@ -61,6 +61,7 @@
   <button onclick="calculate()">Calculate</button>
 
   <div class="results">
+    <div id="chart" style="margin-top:20px;"></div>
     <p><strong>Average Return:</strong> <span id="avg"></span></p>
     <p><strong>Volatility:</strong> <span id="vol"></span></p>
     <p><strong>Beta:</strong> <span id="beta"></span></p>
@@ -109,7 +110,7 @@ function beta(stock, market) {
   return cov / varM;
 }
 
-async function calculate() {
+async function calculate(loadChart(ticker);) {
   let ticker = document.getElementById("ticker").value;
   let rf = Number(document.getElementById("rf").value);
 
@@ -131,6 +132,27 @@ async function calculate() {
 }
 
 </script>
+<script src="https://s3.tradingview.com/tv.js"></script>
 
+<script>
+function loadChart(ticker) {
+  document.getElementById("chart").innerHTML = "";
+
+  new TradingView.widget({
+    "width": 350,
+    "height": 300,
+    "symbol": ticker,
+    "interval": "D",
+    "timezone": "Etc/UTC",
+    "theme": "light",
+    "style": "1",
+    "locale": "en",
+    "toolbar_bg": "#f1f3f6",
+    "hide_top_toolbar": false,
+    "allow_symbol_change": true,
+    "container_id": "chart"
+  });
+}
+</script>
 </body>
 </html>
