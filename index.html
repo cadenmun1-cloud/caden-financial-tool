@@ -2,81 +2,184 @@
 <html>
 <head>
   <title>Caden Munro Financial Analysis Tool</title>
-
   <style>
     body {
-      font-family: Arial;
-      background-color: #f5f7fa;
-      padding: 30px;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e3a8a);
+      color: #111827;
+      min-height: 100vh;
+      padding: 40px;
+    }
+
+    .header {
       text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 42px;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      color: #dbeafe;
+      font-size: 18px;
     }
 
     .container {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      width: 400px;
+      max-width: 950px;
       margin: auto;
-      box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    }
+
+    .inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 15px;
+      align-items: end;
+      margin-bottom: 25px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 8px;
     }
 
     input {
-      width: 90%;
-      padding: 10px;
-      margin: 10px 0;
+      width: 100%;
+      padding: 13px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      font-size: 16px;
+      box-sizing: border-box;
     }
 
     button {
-      padding: 10px;
-      background-color: #3498db;
+      padding: 14px 22px;
+      background: #2563eb;
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 10px;
+      font-size: 16px;
       cursor: pointer;
+      font-weight: bold;
     }
 
     button:hover {
-      background-color: #2980b9;
+      background: #1d4ed8;
     }
 
     .results {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: #f8fafc;
+      padding: 20px;
+      border-radius: 15px;
+      border: 1px solid #e2e8f0;
+      text-align: center;
+    }
+
+    .card h3 {
+      margin: 0 0 10px 0;
+      font-size: 15px;
+      color: #475569;
+    }
+
+    .card p {
+      margin: 0;
+      font-size: 24px;
+      font-weight: bold;
+      color: #0f172a;
+    }
+
+    #chart {
       margin-top: 20px;
-      text-align: left;
+      border-radius: 15px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+    }
+
+    .note {
+      font-size: 14px;
+      color: #64748b;
+      margin-top: 15px;
+      text-align: center;
     }
   </style>
 </head>
 
 <body>
 
-<h1>Caden Munro – Financial Analysis Tool</h1>
+<div class="header">
+  <h1>Caden Munro Financial Analysis Tool</h1>
+  <p>Real stock data, financial metrics, and live chart analysis</p>
+</div>
 
 <div class="container">
 
-  <p><strong>Stock Ticker (AAPL, TSLA, MSFT)</strong></p>
-  <input id="ticker" placeholder="Enter stock ticker">
+  <div class="inputs">
+    <div>
+      <label>Stock Ticker</label>
+      <input id="ticker" placeholder="Example: AAPL, TSLA, MSFT">
+    </div>
 
-  <p><strong>Risk-Free Rate (%)</strong></p>
-  <input id="rf" placeholder="e.g. 2">
+    <div>
+      <label>Risk-Free Rate (%)</label>
+      <input id="rf" placeholder="Example: 2">
+    </div>
 
-  <button onclick="calculate()">Calculate</button>
+    <button onclick="calculate()">Calculate</button>
+  </div>
 
   <div class="results">
-    <div id="chart" style="margin-top:20px;"></div>
-    <p><strong>Average Return:</strong> <span id="avg"></span></p>
-    <p><strong>Volatility:</strong> <span id="vol"></span></p>
-    <p><strong>Beta:</strong> <span id="beta"></span></p>
-    <p><strong>Sharpe Ratio:</strong> <span id="sharpe"></span></p>
+    <div class="card">
+      <h3>Average Return</h3>
+      <p id="avg">--</p>
+    </div>
+
+    <div class="card">
+      <h3>Volatility</h3>
+      <p id="vol">--</p>
+    </div>
+
+    <div class="card">
+      <h3>Beta</h3>
+      <p id="beta">--</p>
+    </div>
+
+    <div class="card">
+      <h3>Sharpe Ratio</h3>
+      <p id="sharpe">--</p>
+    </div>
   </div>
+
+  <div id="chart"></div>
+
+  <p class="note">
+    Market benchmark used for beta: SPY. Data range: 1 month daily prices.
+  </p>
 
 </div>
 
-<script>
+<script src="https://s3.tradingview.com/tv.js"></script>
 
+<script>
 async function getData(ticker) {
   let url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=1mo&interval=1d`;
   let res = await fetch(url);
   let data = await res.json();
-  return data.chart.result[0].indicators.quote[0].close;
+  return data.chart.result[0].indicators.quote[0].close.filter(x => x !== null);
 }
 
 function returns(prices) {
@@ -100,7 +203,8 @@ function beta(stock, market) {
   let avgS = avg(stock);
   let avgM = avg(market);
 
-  let cov = 0, varM = 0;
+  let cov = 0;
+  let varM = 0;
 
   for (let i = 0; i < stock.length; i++) {
     cov += (stock[i]-avgS)*(market[i]-avgM);
@@ -110,8 +214,24 @@ function beta(stock, market) {
   return cov / varM;
 }
 
-async function calculate(loadChart(ticker);) {
-  let ticker = document.getElementById("ticker").value;
+function loadChart(ticker) {
+  document.getElementById("chart").innerHTML = "";
+
+  new TradingView.widget({
+    width: "100%",
+    height: 420,
+    symbol: ticker,
+    interval: "D",
+    timezone: "Etc/UTC",
+    theme: "light",
+    style: "1",
+    locale: "en",
+    container_id: "chart"
+  });
+}
+
+async function calculate() {
+  let ticker = document.getElementById("ticker").value.toUpperCase();
   let rf = Number(document.getElementById("rf").value);
 
   let stockPrices = await getData(ticker);
@@ -129,30 +249,10 @@ async function calculate(loadChart(ticker);) {
   document.getElementById("vol").innerText = volatility.toFixed(2);
   document.getElementById("beta").innerText = b.toFixed(2);
   document.getElementById("sharpe").innerText = sharpe.toFixed(2);
-}
 
-</script>
-<script src="https://s3.tradingview.com/tv.js"></script>
-
-<script>
-function loadChart(ticker) {
-  document.getElementById("chart").innerHTML = "";
-
-  new TradingView.widget({
-    "width": 350,
-    "height": 300,
-    "symbol": ticker,
-    "interval": "D",
-    "timezone": "Etc/UTC",
-    "theme": "light",
-    "style": "1",
-    "locale": "en",
-    "toolbar_bg": "#f1f3f6",
-    "hide_top_toolbar": false,
-    "allow_symbol_change": true,
-    "container_id": "chart"
-  });
+  loadChart(ticker);
 }
 </script>
+
 </body>
 </html>
