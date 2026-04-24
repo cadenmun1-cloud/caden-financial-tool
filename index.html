@@ -182,10 +182,28 @@
 </div>
 
 <script>
-async function getData(ticker) {
-  let url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=1mo&interval=1d`;
-  let res = await fetch(url);
-  let data = await res.json();
+aasync function getData(ticker) {
+  let symbol = ticker.toLowerCase() + ".us";
+  let stooqUrl = `https://stooq.com/q/d/l/?s=${symbol}&i=d`;
+  let proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(stooqUrl)}`;
+
+  let res = await fetch(proxyUrl);
+  let csv = await res.text();
+
+  let rows = csv.trim().split("\n").slice(-30);
+  let prices = [];
+
+  for (let i = 1; i < rows.length; i++) {
+    let columns = rows[i].split(",");
+    let closePrice = Number(columns[4]);
+
+    if (!isNaN(closePrice)) {
+      prices.push(closePrice);
+    }
+  }
+
+  return prices;
+}
 
   return data.chart.result[0].indicators.quote[0].close.filter(x => x !== null);
 }
