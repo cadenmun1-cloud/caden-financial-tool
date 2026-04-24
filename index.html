@@ -1,295 +1,137 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Caden Munro Financial Analysis Tool</title>
+  <title>Caden Munro Financial Calculator</title>
+
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #0f172a, #1e3a8a);
-      color: #111827;
-      min-height: 100vh;
-      padding: 40px;
-    }
-
-    .header {
-      text-align: center;
+      font-family: Arial;
+      background: linear-gradient(135deg, #1e293b, #0f172a);
       color: white;
-      margin-bottom: 30px;
+      padding: 40px;
+      text-align: center;
     }
 
-    .header h1 {
-      font-size: 44px;
+    h1 {
       margin-bottom: 10px;
     }
 
-    .header p {
-      color: #dbeafe;
-      font-size: 18px;
-    }
-
     .container {
-      max-width: 1000px;
-      margin: auto;
       background: white;
-      border-radius: 24px;
-      padding: 32px;
-      box-shadow: 0 25px 60px rgba(0,0,0,0.28);
-    }
-
-    .inputs {
-      display: grid;
-      grid-template-columns: 1fr 1fr auto;
-      gap: 16px;
-      align-items: end;
-      margin-bottom: 28px;
-    }
-
-    label {
-      font-weight: bold;
-      display: block;
-      margin-bottom: 8px;
+      color: black;
+      max-width: 600px;
+      margin: auto;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
     }
 
     input {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #cbd5e1;
+      width: 90%;
+      padding: 12px;
+      margin: 10px;
       font-size: 16px;
-      box-sizing: border-box;
+      border-radius: 10px;
+      border: 1px solid #ccc;
     }
 
     button {
-      padding: 15px 26px;
+      padding: 12px 20px;
       background: #2563eb;
       color: white;
       border: none;
-      border-radius: 12px;
-      font-size: 16px;
+      border-radius: 10px;
       cursor: pointer;
-      font-weight: bold;
+      margin-top: 10px;
     }
 
     button:hover {
       background: #1d4ed8;
     }
 
-    .results {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin-bottom: 25px;
-    }
-
-    .card {
-      background: #f8fafc;
-      padding: 22px;
-      border-radius: 18px;
-      border: 1px solid #e2e8f0;
-      text-align: center;
-    }
-
-    .card h3 {
-      margin: 0 0 10px 0;
-      font-size: 15px;
-      color: #475569;
-    }
-
-    .card p {
-      margin: 0;
-      font-size: 26px;
+    .result {
+      margin-top: 20px;
+      font-size: 18px;
       font-weight: bold;
-      color: #0f172a;
-    }
-
-    #status {
-      text-align: center;
-      font-weight: bold;
-      color: #2563eb;
-      margin-bottom: 20px;
-    }
-
-    #chart {
-      margin-top: 25px;
-      border-radius: 18px;
-      overflow: hidden;
-      border: 1px solid #e2e8f0;
     }
 
     .note {
       font-size: 14px;
-      color: #64748b;
-      margin-top: 18px;
-      text-align: center;
+      color: #555;
+      margin-top: 15px;
     }
   </style>
 </head>
 
 <body>
 
-<div class="header">
-  <h1>Caden Munro Financial Analysis Tool</h1>
-  <p>Real stock data, financial metrics, and live chart analysis</p>
-</div>
+<h1>Caden Munro Financial Calculator</h1>
+<p>Leave ONE field blank to solve for it</p>
 
 <div class="container">
 
-  <div class="inputs">
-    <div>
-      <label>Stock Ticker</label>
-      <input id="ticker" value="AAPL" placeholder="Example: AAPL, TSLA, MSFT">
-    </div>
+  <input id="pv" placeholder="Present Value (PV)">
+  <input id="fv" placeholder="Future Value (FV)">
+  <input id="pmt" placeholder="Payment (PMT)">
+  <input id="rate" placeholder="Interest Rate (I %)">
+  <input id="n" placeholder="Number of Periods (N)">
 
-    <div>
-      <label>Risk-Free Rate (%)</label>
-      <input id="rf" value="2" placeholder="Example: 2">
-    </div>
+  <button onclick="calculate()">Calculate</button>
 
-    <button onclick="calculate()">Calculate</button>
-  </div>
-
-  <div id="status">Enter a ticker and click Calculate.</div>
-
-  <div class="results">
-    <div class="card">
-      <h3>Average Return</h3>
-      <p id="avg">--</p>
-    </div>
-
-    <div class="card">
-      <h3>Volatility</h3>
-      <p id="vol">--</p>
-    </div>
-
-    <div class="card">
-      <h3>Beta</h3>
-      <p id="beta">--</p>
-    </div>
-
-    <div class="card">
-      <h3>Sharpe Ratio</h3>
-      <p id="sharpe">--</p>
-    </div>
-  </div>
-
-  <div id="chart"></div>
+  <div class="result" id="result"></div>
 
   <p class="note">
-    Market benchmark used for beta: SPY. Data range: 1 month daily prices.
+    Assumes compound interest. Interest rate should be annual %.
   </p>
 
 </div>
 
 <script>
-aasync function getData(ticker) {
-  let symbol = ticker.toLowerCase() + ".us";
-  let stooqUrl = `https://stooq.com/q/d/l/?s=${symbol}&i=d`;
-  let proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(stooqUrl)}`;
 
-  let res = await fetch(proxyUrl);
-  let csv = await res.text();
+function calculate() {
 
-  let rows = csv.trim().split("\n").slice(-30);
-  let prices = [];
+  let pv = parseFloat(document.getElementById("pv").value);
+  let fv = parseFloat(document.getElementById("fv").value);
+  let pmt = parseFloat(document.getElementById("pmt").value);
+  let r = parseFloat(document.getElementById("rate").value) / 100;
+  let n = parseFloat(document.getElementById("n").value);
 
-  for (let i = 1; i < rows.length; i++) {
-    let columns = rows[i].split(",");
-    let closePrice = Number(columns[4]);
+  let result = "";
 
-    if (!isNaN(closePrice)) {
-      prices.push(closePrice);
-    }
+  // Solve FV
+  if (isNaN(fv)) {
+    fv = pv * Math.pow(1+r, n) + pmt * ((Math.pow(1+r,n)-1)/r);
+    result = "Future Value = $" + fv.toFixed(2);
   }
 
-  return prices;
-}
-
-  return data.chart.result[0].indicators.quote[0].close.filter(x => x !== null);
-}
-
-function returns(prices) {
-  let r = [];
-
-  for (let i = 1; i < prices.length; i++) {
-    r.push(((prices[i] - prices[i - 1]) / prices[i - 1]) * 100);
+  // Solve PV
+  else if (isNaN(pv)) {
+    pv = (fv - pmt * ((Math.pow(1+r,n)-1)/r)) / Math.pow(1+r,n);
+    result = "Present Value = $" + pv.toFixed(2);
   }
 
-  return r;
-}
-
-function avg(arr) {
-  return arr.reduce((a, b) => a + b, 0) / arr.length;
-}
-
-function std(arr, mean) {
-  let variance = arr.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0) / arr.length;
-  return Math.sqrt(variance);
-}
-
-function beta(stock, market) {
-  let avgStock = avg(stock);
-  let avgMarket = avg(market);
-
-  let covariance = 0;
-  let marketVariance = 0;
-
-  for (let i = 0; i < stock.length; i++) {
-    covariance += (stock[i] - avgStock) * (market[i] - avgMarket);
-    marketVariance += Math.pow(market[i] - avgMarket, 2);
+  // Solve PMT
+  else if (isNaN(pmt)) {
+    pmt = (fv - pv*Math.pow(1+r,n)) * r / (Math.pow(1+r,n)-1);
+    result = "Payment = $" + pmt.toFixed(2);
   }
 
-  return covariance / marketVariance;
-}
-
-function loadChart(ticker) {
-  document.getElementById("chart").innerHTML = `
-    <iframe 
-      src="https://s.tradingview.com/widgetembed/?symbol=NASDAQ:${ticker}&interval=D&theme=light"
-      width="100%" 
-      height="420" 
-      frameborder="0">
-    </iframe>
-  `;
-}
-
-async function calculate() {
-  let ticker = document.getElementById("ticker").value.toUpperCase().trim();
-  let rf = Number(document.getElementById("rf").value);
-  let status = document.getElementById("status");
-
-  if (ticker === "") {
-    status.innerText = "Please enter a stock ticker.";
-    return;
+  // Solve N (approximation)
+  else if (isNaN(n)) {
+    n = Math.log((fv*r + pmt)/(pv*r + pmt)) / Math.log(1+r);
+    result = "Periods (N) = " + n.toFixed(2);
   }
 
-  status.innerText = "Loading real stock data...";
-
-  try {
-    let stockPrices = await getData(ticker);
-    let marketPrices = await getData("SPY");
-
-    let stockReturns = returns(stockPrices);
-    let marketReturns = returns(marketPrices);
-
-    let averageReturn = avg(stockReturns);
-    let volatility = std(stockReturns, averageReturn);
-    let stockBeta = beta(stockReturns, marketReturns);
-    let sharpeRatio = (averageReturn - rf) / volatility;
-
-    document.getElementById("avg").innerText = averageReturn.toFixed(2) + "%";
-    document.getElementById("vol").innerText = volatility.toFixed(2);
-    document.getElementById("beta").innerText = stockBeta.toFixed(2);
-    document.getElementById("sharpe").innerText = sharpeRatio.toFixed(2);
-
-    loadChart(ticker);
-
-    status.innerText = "Results calculated successfully for " + ticker + ".";
-  } catch (error) {
-    status.innerText = "Error loading data. Try another ticker like AAPL, MSFT, or TSLA.";
+  else {
+    result = "Leave one field blank to solve.";
   }
+
+  document.getElementById("result").innerText = result;
 }
+
 </script>
 
 </body>
+
 </html>
