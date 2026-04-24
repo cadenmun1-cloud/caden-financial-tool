@@ -19,7 +19,7 @@
     }
 
     .header h1 {
-      font-size: 42px;
+      font-size: 44px;
       margin-bottom: 10px;
     }
 
@@ -29,20 +29,20 @@
     }
 
     .container {
-      max-width: 950px;
+      max-width: 1000px;
       margin: auto;
       background: white;
-      border-radius: 20px;
-      padding: 30px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.28);
     }
 
     .inputs {
       display: grid;
       grid-template-columns: 1fr 1fr auto;
-      gap: 15px;
+      gap: 16px;
       align-items: end;
-      margin-bottom: 25px;
+      margin-bottom: 28px;
     }
 
     label {
@@ -53,19 +53,19 @@
 
     input {
       width: 100%;
-      padding: 13px;
-      border-radius: 10px;
+      padding: 14px;
+      border-radius: 12px;
       border: 1px solid #cbd5e1;
       font-size: 16px;
       box-sizing: border-box;
     }
 
     button {
-      padding: 14px 22px;
+      padding: 15px 26px;
       background: #2563eb;
       color: white;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       font-size: 16px;
       cursor: pointer;
       font-weight: bold;
@@ -78,14 +78,14 @@
     .results {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 15px;
-      margin-bottom: 30px;
+      gap: 16px;
+      margin-bottom: 25px;
     }
 
     .card {
       background: #f8fafc;
-      padding: 20px;
-      border-radius: 15px;
+      padding: 22px;
+      border-radius: 18px;
       border: 1px solid #e2e8f0;
       text-align: center;
     }
@@ -98,14 +98,21 @@
 
     .card p {
       margin: 0;
-      font-size: 24px;
+      font-size: 26px;
       font-weight: bold;
       color: #0f172a;
     }
 
+    #status {
+      text-align: center;
+      font-weight: bold;
+      color: #2563eb;
+      margin-bottom: 20px;
+    }
+
     #chart {
-      margin-top: 20px;
-      border-radius: 15px;
+      margin-top: 25px;
+      border-radius: 18px;
       overflow: hidden;
       border: 1px solid #e2e8f0;
     }
@@ -113,7 +120,7 @@
     .note {
       font-size: 14px;
       color: #64748b;
-      margin-top: 15px;
+      margin-top: 18px;
       text-align: center;
     }
   </style>
@@ -131,16 +138,18 @@
   <div class="inputs">
     <div>
       <label>Stock Ticker</label>
-      <input id="ticker" placeholder="Example: AAPL, TSLA, MSFT">
+      <input id="ticker" value="AAPL" placeholder="Example: AAPL, TSLA, MSFT">
     </div>
 
     <div>
       <label>Risk-Free Rate (%)</label>
-      <input id="rf" placeholder="Example: 2">
+      <input id="rf" value="2" placeholder="Example: 2">
     </div>
 
     <button onclick="calculate()">Calculate</button>
   </div>
+
+  <div id="status">Enter a ticker and click Calculate.</div>
 
   <div class="results">
     <div class="card">
@@ -177,39 +186,42 @@ async function getData(ticker) {
   let url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=1mo&interval=1d`;
   let res = await fetch(url);
   let data = await res.json();
+
   return data.chart.result[0].indicators.quote[0].close.filter(x => x !== null);
 }
 
 function returns(prices) {
   let r = [];
+
   for (let i = 1; i < prices.length; i++) {
-    r.push(((prices[i] - prices[i-1]) / prices[i-1]) * 100);
+    r.push(((prices[i] - prices[i - 1]) / prices[i - 1]) * 100);
   }
+
   return r;
 }
 
 function avg(arr) {
-  return arr.reduce((a,b)=>a+b,0)/arr.length;
+  return arr.reduce((a, b) => a + b, 0) / arr.length;
 }
 
 function std(arr, mean) {
-  let v = arr.reduce((s,x)=> s + Math.pow(x-mean,2),0)/arr.length;
-  return Math.sqrt(v);
+  let variance = arr.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0) / arr.length;
+  return Math.sqrt(variance);
 }
 
 function beta(stock, market) {
-  let avgS = avg(stock);
-  let avgM = avg(market);
+  let avgStock = avg(stock);
+  let avgMarket = avg(market);
 
-  let cov = 0;
-  let varM = 0;
+  let covariance = 0;
+  let marketVariance = 0;
 
   for (let i = 0; i < stock.length; i++) {
-    cov += (stock[i]-avgS)*(market[i]-avgM);
-    varM += Math.pow(market[i]-avgM,2);
+    covariance += (stock[i] - avgStock) * (market[i] - avgMarket);
+    marketVariance += Math.pow(market[i] - avgMarket, 2);
   }
 
-  return cov / varM;
+  return covariance / marketVariance;
 }
 
 function loadChart(ticker) {
@@ -223,40 +235,41 @@ function loadChart(ticker) {
   `;
 }
 
-  new TradingView.widget({
-    width: "100%",
-    height: 420,
-    symbol: "NASDAQ:" + ticker,
-    interval: "D",
-    timezone: "Etc/UTC",
-    theme: "light",
-    style: "1",
-    locale: "en",
-    container_id: "chart"
-  });
-}
-
 async function calculate() {
-  let ticker = document.getElementById("ticker").value.toUpperCase();
+  let ticker = document.getElementById("ticker").value.toUpperCase().trim();
   let rf = Number(document.getElementById("rf").value);
+  let status = document.getElementById("status");
 
-  let stockPrices = await getData(ticker);
-  let marketPrices = await getData("SPY");
+  if (ticker === "") {
+    status.innerText = "Please enter a stock ticker.";
+    return;
+  }
 
-  let stockR = returns(stockPrices);
-  let marketR = returns(marketPrices);
+  status.innerText = "Loading real stock data...";
 
-  let average = avg(stockR);
-  let volatility = std(stockR, average);
-  let b = beta(stockR, marketR);
-  let sharpe = (average - rf) / volatility;
+  try {
+    let stockPrices = await getData(ticker);
+    let marketPrices = await getData("SPY");
 
-  document.getElementById("avg").innerText = average.toFixed(2) + "%";
-  document.getElementById("vol").innerText = volatility.toFixed(2);
-  document.getElementById("beta").innerText = b.toFixed(2);
-  document.getElementById("sharpe").innerText = sharpe.toFixed(2);
+    let stockReturns = returns(stockPrices);
+    let marketReturns = returns(marketPrices);
 
-  loadChart(ticker);
+    let averageReturn = avg(stockReturns);
+    let volatility = std(stockReturns, averageReturn);
+    let stockBeta = beta(stockReturns, marketReturns);
+    let sharpeRatio = (averageReturn - rf) / volatility;
+
+    document.getElementById("avg").innerText = averageReturn.toFixed(2) + "%";
+    document.getElementById("vol").innerText = volatility.toFixed(2);
+    document.getElementById("beta").innerText = stockBeta.toFixed(2);
+    document.getElementById("sharpe").innerText = sharpeRatio.toFixed(2);
+
+    loadChart(ticker);
+
+    status.innerText = "Results calculated successfully for " + ticker + ".";
+  } catch (error) {
+    status.innerText = "Error loading data. Try another ticker like AAPL, MSFT, or TSLA.";
+  }
 }
 </script>
 
