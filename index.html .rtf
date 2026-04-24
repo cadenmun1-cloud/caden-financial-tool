@@ -1,0 +1,143 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2822
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww28600\viewh14960\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\qj\partightenfactor0
+
+\f0\fs24 \cf0 <!DOCTYPE html>\
+<html>\
+<head>\
+  <title>Caden Munro Financial Analysis Tool</title>\
+\
+  <style>\
+    body \{\
+      font-family: Arial;\
+      background-color: #f5f7fa;\
+      padding: 30px;\
+      text-align: center;\
+    \}\
+\
+    .container \{\
+      background: white;\
+      padding: 20px;\
+      border-radius: 10px;\
+      width: 400px;\
+      margin: auto;\
+      box-shadow: 0px 0px 10px rgba(0,0,0,0.1);\
+    \}\
+\
+    input \{\
+      width: 90%;\
+      padding: 10px;\
+      margin: 10px 0;\
+    \}\
+\
+    button \{\
+      padding: 10px;\
+      background-color: #3498db;\
+      color: white;\
+      border: none;\
+      border-radius: 5px;\
+      cursor: pointer;\
+    \}\
+\
+    button:hover \{\
+      background-color: #2980b9;\
+    \}\
+\
+    .results \{\
+      margin-top: 20px;\
+      text-align: left;\
+    \}\
+  </style>\
+</head>\
+\
+<body>\
+\
+<h1>Caden Munro \'96 Financial Analysis Tool</h1>\
+\
+<div class="container">\
+\
+  <p><strong>Stock Ticker (AAPL, TSLA, MSFT)</strong></p>\
+  <input id="ticker" placeholder="Enter stock ticker">\
+\
+  <p><strong>Risk-Free Rate (%)</strong></p>\
+  <input id="rf" placeholder="e.g. 2">\
+\
+  <button onclick="calculate()">Calculate</button>\
+\
+  <div class="results">\
+    <p><strong>Average Return:</strong> <span id="avg"></span></p>\
+    <p><strong>Volatility:</strong> <span id="vol"></span></p>\
+    <p><strong>Beta:</strong> <span id="beta"></span></p>\
+    <p><strong>Sharpe Ratio:</strong> <span id="sharpe"></span></p>\
+  </div>\
+\
+</div>\
+\
+<script>\
+\
+async function getData(ticker) \{\
+  let url = `https://query1.finance.yahoo.com/v8/finance/chart/$\{ticker\}?range=1mo&interval=1d`;\
+  let res = await fetch(url);\
+  let data = await res.json();\
+  return data.chart.result[0].indicators.quote[0].close;\
+\}\
+\
+function returns(prices) \{\
+  let r = [];\
+  for (let i = 1; i < prices.length; i++) \{\
+    r.push(((prices[i] - prices[i-1]) / prices[i-1]) * 100);\
+  \}\
+  return r;\
+\}\
+\
+function avg(arr) \{\
+  return arr.reduce((a,b)=>a+b,0)/arr.length;\
+\}\
+\
+function std(arr, mean) \{\
+  let v = arr.reduce((s,x)=> s + Math.pow(x-mean,2),0)/arr.length;\
+  return Math.sqrt(v);\
+\}\
+\
+function beta(stock, market) \{\
+  let avgS = avg(stock);\
+  let avgM = avg(market);\
+\
+  let cov = 0, varM = 0;\
+\
+  for (let i = 0; i < stock.length; i++) \{\
+    cov += (stock[i]-avgS)*(market[i]-avgM);\
+    varM += Math.pow(market[i]-avgM,2);\
+  \}\
+\
+  return cov / varM;\
+\}\
+\
+async function calculate() \{\
+  let ticker = document.getElementById("ticker").value;\
+  let rf = Number(document.getElementById("rf").value);\
+\
+  let stockPrices = await getData(ticker);\
+  let marketPrices = await getData("SPY");\
+\
+  let stockR = returns(stockPrices);\
+  let marketR = returns(marketPrices);\
+\
+  let average = avg(stockR);\
+  let volatility = std(stockR, average);\
+  let b = beta(stockR, marketR);\
+  let sharpe = (average - rf) / volatility;\
+\
+  document.getElementById("avg").innerText = average.toFixed(2) + "%";\
+  document.getElementById("vol").innerText = volatility.toFixed(2);\
+  document.getElementById("beta").innerText = b.toFixed(2);\
+  document.getElementById("sharpe").innerText = sharpe.toFixed(2);\
+\}\
+\
+</script>\
+\
+</body>\
+</html>}
