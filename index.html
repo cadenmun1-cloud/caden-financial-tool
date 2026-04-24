@@ -1,96 +1,415 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Caden Munro Financial Calculator</title>
-
+  <title>Caden Munro A+ Financial Calculator</title>
   <style>
     body {
       margin: 0;
-      font-family: Arial;
-      background: linear-gradient(135deg, #1e293b, #0f172a);
-      color: white;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #064e3b);
+      color: #111827;
       padding: 40px;
-      text-align: center;
     }
 
-    h1 {
-      margin-bottom: 10px;
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 46px;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      color: #d1fae5;
+      font-size: 18px;
     }
 
     .container {
-      background: white;
-      color: black;
-      max-width: 600px;
+      max-width: 1100px;
       margin: auto;
-      padding: 30px;
-      border-radius: 20px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+      background: white;
+      padding: 32px;
+      border-radius: 24px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+    }
+
+    .section {
+      margin-bottom: 35px;
+      padding-bottom: 25px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    h2 {
+      color: #064e3b;
+      margin-bottom: 15px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 6px;
     }
 
     input {
-      width: 90%;
-      padding: 12px;
-      margin: 10px;
-      font-size: 16px;
+      width: 100%;
+      padding: 13px;
       border-radius: 10px;
-      border: 1px solid #ccc;
+      border: 1px solid #cbd5e1;
+      font-size: 15px;
+      box-sizing: border-box;
     }
 
     button {
-      padding: 12px 20px;
-      background: #2563eb;
+      width: 100%;
+      padding: 15px;
+      margin-top: 20px;
+      background: #047857;
       color: white;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: bold;
       cursor: pointer;
-      margin-top: 10px;
     }
 
     button:hover {
-      background: #1d4ed8;
+      background: #065f46;
     }
 
-    .result {
-      margin-top: 20px;
-      font-size: 18px;
+    .results {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 25px;
+    }
+
+    .card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .card h3 {
+      font-size: 14px;
+      color: #475569;
+      margin-bottom: 10px;
+    }
+
+    .card p {
+      font-size: 23px;
       font-weight: bold;
+      color: #064e3b;
+      margin: 0;
+    }
+
+    #chart {
+      margin-top: 30px;
+      height: 300px;
+      border-left: 2px solid #94a3b8;
+      border-bottom: 2px solid #94a3b8;
+      display: flex;
+      align-items: end;
+      gap: 6px;
+      padding: 10px;
+      background: #f8fafc;
+      border-radius: 12px;
+    }
+
+    .bar {
+      flex: 1;
+      background: #10b981;
+      border-radius: 6px 6px 0 0;
+      min-height: 5px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 25px;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: center;
+    }
+
+    th {
+      background: #ecfdf5;
+      color: #064e3b;
     }
 
     .note {
+      color: #64748b;
       font-size: 14px;
-      color: #555;
-      margin-top: 15px;
+      text-align: center;
+      margin-top: 20px;
     }
   </style>
 </head>
 
 <body>
 
-<h1>Caden Munro Financial Calculator</h1>
-<p>Leave ONE field blank to solve for it</p>
+<div class="header">
+  <h1>Caden Munro A+ Financial Calculator</h1>
+  <p>Retirement planning, time value of money, compound growth, chart, and verification table</p>
+</div>
 
 <div class="container">
 
-  <input id="pv" placeholder="Present Value (PV)">
-  <input id="fv" placeholder="Future Value (FV)">
-  <input id="pmt" placeholder="Payment (PMT)">
-  <input id="rate" placeholder="Interest Rate (I %)">
-  <input id="n" placeholder="Number of Periods (N)">
+  <div class="section">
+    <h2>Retirement Calculator</h2>
 
-  <button onclick="calculate()">Calculate</button>
+    <div class="grid">
+      <div>
+        <label>Current Age</label>
+        <input id="currentAge" value="22">
+      </div>
 
-  <div class="result" id="result"></div>
+      <div>
+        <label>Retirement Age</label>
+        <input id="retirementAge" value="65">
+      </div>
 
-  <p class="note">
-    Assumes compound interest. Interest rate should be annual %.
-  </p>
+      <div>
+        <label>Current Savings ($)</label>
+        <input id="currentSavings" value="5000">
+      </div>
+
+      <div>
+        <label>Monthly Contribution ($)</label>
+        <input id="monthlyContribution" value="300">
+      </div>
+
+      <div>
+        <label>Expected Annual Return (%)</label>
+        <input id="annualReturn" value="7">
+      </div>
+
+      <div>
+        <label>Inflation Rate (%)</label>
+        <input id="inflationRate" value="3">
+      </div>
+    </div>
+
+    <button onclick="calculateRetirement()">Calculate Retirement Plan</button>
+
+    <div class="results">
+      <div class="card">
+        <h3>Years Until Retirement</h3>
+        <p id="years">--</p>
+      </div>
+
+      <div class="card">
+        <h3>Total Contributions</h3>
+        <p id="contributions">--</p>
+      </div>
+
+      <div class="card">
+        <h3>Future Balance</h3>
+        <p id="futureValue">--</p>
+      </div>
+
+      <div class="card">
+        <h3>Inflation Adjusted</h3>
+        <p id="realValue">--</p>
+      </div>
+
+      <div class="card">
+        <h3>Annual Retirement Income</h3>
+        <p id="annualIncome">--</p>
+      </div>
+
+      <div class="card">
+        <h3>Monthly Retirement Income</h3>
+        <p id="monthlyIncome">--</p>
+      </div>
+
+      <div class="card">
+        <h3>Total Investment Gain</h3>
+        <p id="gain">--</p>
+      </div>
+
+      <div class="card">
+        <h3>Goal Status</h3>
+        <p id="goal">--</p>
+      </div>
+    </div>
+
+    <div id="chart"></div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Year</th>
+          <th>Age</th>
+          <th>Beginning Balance</th>
+          <th>Annual Contribution</th>
+          <th>Ending Balance</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+
+    <p class="note">
+      Uses monthly compounding, monthly contributions, inflation adjustment, and the 4% withdrawal rule.
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>FV / PV / PMT / I / N Calculator</h2>
+    <p>Leave ONE field blank to solve for it.</p>
+
+    <div class="grid">
+      <div>
+        <label>Present Value (PV)</label>
+        <input id="pv" value="1000">
+      </div>
+
+      <div>
+        <label>Future Value (FV)</label>
+        <input id="fv">
+      </div>
+
+      <div>
+        <label>Payment (PMT)</label>
+        <input id="pmt" value="100">
+      </div>
+
+      <div>
+        <label>Interest Rate (I %)</label>
+        <input id="rate" value="7">
+      </div>
+
+      <div>
+        <label>Number of Periods (N)</label>
+        <input id="n" value="10">
+      </div>
+    </div>
+
+    <button onclick="calculateTVM()">Calculate Missing Value</button>
+
+    <div class="card" style="margin-top:20px;">
+      <h3>TVM Result</h3>
+      <p id="tvmResult">--</p>
+    </div>
+
+    <p class="note">
+      TVM calculator assumes compound interest and end-of-period payments.
+    </p>
+  </div>
 
 </div>
 
 <script>
+function money(value) {
+  return value.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0
+  });
+}
 
-function calculate() {
+function calculateRetirement() {
+  let currentAge = Number(document.getElementById("currentAge").value);
+  let retirementAge = Number(document.getElementById("retirementAge").value);
+  let currentSavings = Number(document.getElementById("currentSavings").value);
+  let monthlyContribution = Number(document.getElementById("monthlyContribution").value);
+  let annualReturn = Number(document.getElementById("annualReturn").value) / 100;
+  let inflationRate = Number(document.getElementById("inflationRate").value) / 100;
 
+  let years = retirementAge - currentAge;
+  let months = years * 12;
+  let monthlyReturn = annualReturn / 12;
+
+  let futureSavings = currentSavings * Math.pow(1 + monthlyReturn, months);
+  let futureContributions = monthlyContribution * ((Math.pow(1 + monthlyReturn, months) - 1) / monthlyReturn);
+  let totalFutureValue = futureSavings + futureContributions;
+
+  let totalContributions = currentSavings + monthlyContribution * months;
+  let inflationAdjusted = totalFutureValue / Math.pow(1 + inflationRate, years);
+  let annualIncome = totalFutureValue * 0.04;
+  let monthlyIncome = annualIncome / 12;
+  let gain = totalFutureValue - totalContributions;
+
+  document.getElementById("years").innerText = years;
+  document.getElementById("contributions").innerText = money(totalContributions);
+  document.getElementById("futureValue").innerText = money(totalFutureValue);
+  document.getElementById("realValue").innerText = money(inflationAdjusted);
+  document.getElementById("annualIncome").innerText = money(annualIncome);
+  document.getElementById("monthlyIncome").innerText = money(monthlyIncome);
+  document.getElementById("gain").innerText = money(gain);
+
+  if (totalFutureValue >= 1000000) {
+    document.getElementById("goal").innerText = "On Track";
+  } else {
+    document.getElementById("goal").innerText = "Needs More Saving";
+  }
+
+  buildChart(currentAge, years, currentSavings, monthlyContribution, annualReturn);
+  buildTable(currentAge, years, currentSavings, monthlyContribution, annualReturn);
+}
+
+function buildChart(currentAge, years, currentSavings, monthlyContribution, annualReturn) {
+  let chart = document.getElementById("chart");
+  chart.innerHTML = "";
+
+  let balances = [];
+  let balance = currentSavings;
+
+  for (let year = 1; year <= years; year++) {
+    balance = balance * (1 + annualReturn) + monthlyContribution * 12;
+    balances.push(balance);
+  }
+
+  let maxBalance = Math.max(...balances);
+
+  balances.forEach(balance => {
+    let bar = document.createElement("div");
+    bar.className = "bar";
+    bar.style.height = (balance / maxBalance * 280) + "px";
+    bar.title = money(balance);
+    chart.appendChild(bar);
+  });
+}
+
+function buildTable(currentAge, years, currentSavings, monthlyContribution, annualReturn) {
+  let tableBody = document.getElementById("tableBody");
+  tableBody.innerHTML = "";
+
+  let balance = currentSavings;
+
+  for (let year = 1; year <= years; year++) {
+    let beginning = balance;
+    let contribution = monthlyContribution * 12;
+    balance = balance * (1 + annualReturn) + contribution;
+
+    let row = `
+      <tr>
+        <td>${year}</td>
+        <td>${currentAge + year}</td>
+        <td>${money(beginning)}</td>
+        <td>${money(contribution)}</td>
+        <td>${money(balance)}</td>
+      </tr>
+    `;
+
+    tableBody.innerHTML += row;
+  }
+}
+
+function calculateTVM() {
   let pv = parseFloat(document.getElementById("pv").value);
   let fv = parseFloat(document.getElementById("fv").value);
   let pmt = parseFloat(document.getElementById("pmt").value);
@@ -99,39 +418,27 @@ function calculate() {
 
   let result = "";
 
-  // Solve FV
   if (isNaN(fv)) {
-    fv = pv * Math.pow(1+r, n) + pmt * ((Math.pow(1+r,n)-1)/r);
-    result = "Future Value = $" + fv.toFixed(2);
+    fv = pv * Math.pow(1 + r, n) + pmt * ((Math.pow(1 + r, n) - 1) / r);
+    result = "FV = " + money(fv);
+  } else if (isNaN(pv)) {
+    pv = (fv - pmt * ((Math.pow(1 + r, n) - 1) / r)) / Math.pow(1 + r, n);
+    result = "PV = " + money(pv);
+  } else if (isNaN(pmt)) {
+    pmt = (fv - pv * Math.pow(1 + r, n)) * r / (Math.pow(1 + r, n) - 1);
+    result = "PMT = " + money(pmt);
+  } else if (isNaN(n)) {
+    n = Math.log((fv * r + pmt) / (pv * r + pmt)) / Math.log(1 + r);
+    result = "N = " + n.toFixed(2) + " periods";
+  } else {
+    result = "Leave exactly one field blank.";
   }
 
-  // Solve PV
-  else if (isNaN(pv)) {
-    pv = (fv - pmt * ((Math.pow(1+r,n)-1)/r)) / Math.pow(1+r,n);
-    result = "Present Value = $" + pv.toFixed(2);
-  }
-
-  // Solve PMT
-  else if (isNaN(pmt)) {
-    pmt = (fv - pv*Math.pow(1+r,n)) * r / (Math.pow(1+r,n)-1);
-    result = "Payment = $" + pmt.toFixed(2);
-  }
-
-  // Solve N (approximation)
-  else if (isNaN(n)) {
-    n = Math.log((fv*r + pmt)/(pv*r + pmt)) / Math.log(1+r);
-    result = "Periods (N) = " + n.toFixed(2);
-  }
-
-  else {
-    result = "Leave one field blank to solve.";
-  }
-
-  document.getElementById("result").innerText = result;
+  document.getElementById("tvmResult").innerText = result;
 }
 
+calculateRetirement();
 </script>
 
 </body>
-
 </html>
